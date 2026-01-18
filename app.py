@@ -82,7 +82,7 @@ system_instruction = """
 """
 
 model = genai.GenerativeModel(
-  model_name="gemini-2.5-flash-001",
+  model_name="gemini-1.5-flash-001",
   generation_config=generation_config,
   system_instruction=system_instruction,
 )
