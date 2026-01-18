@@ -90,7 +90,7 @@ model = genai.GenerativeModel(
 
 # 4. Giao diện Chat
 st.title("📚 TRỢ LÝ SƯ PHẠM NGỮ VĂN & MENTOR NĂNG LỰC SỐ")
-st.caption("Trợ lý học tập môn Ngữ Văn - PTDTBT&THCS Hố Quáng Phìn")
+st.caption("Trợ lý Sư phạm Ngữ Văn - Trường PTDTBT&THCS Hố Quáng Phìn")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
