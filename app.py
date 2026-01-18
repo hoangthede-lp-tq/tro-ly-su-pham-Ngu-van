@@ -82,14 +82,14 @@ system_instruction = """
 """
 
 model = genai.GenerativeModel(
-  model_name="gemini-1.5-flash", # Hoặc gemini-1.5-pro tùy thầy chọn bên AI Studio
+  model_name="gemini-2.5-flash-001",
   generation_config=generation_config,
   system_instruction=system_instruction,
 )
 
 # 4. Giao diện Chat
-st.title("📚 Văn Sĩ Số - Người bạn đồng hành")
-st.caption("Dành cho học sinh THCS - Phát triển bởi Thầy Hoàng Thế Đệ")
+st.title("📚 Trợ lý Sư phạm Ngữ văn & Mentor Năng lực số")
+st.caption("Dành cho Giáo viên và học sinh THCS - Phát triển bởi Thầy Hoàng Thế Đệ - GV Trường PTDTBT TH&THCS Hố Quáng Phìn")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
