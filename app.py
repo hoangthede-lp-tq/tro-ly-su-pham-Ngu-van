@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 
 # Cấu hình tiêu đề trang
-st.set_page_config(page_title="Văn Sĩ Số - Trợ lý Văn học", page_icon="📚")
+st.set_page_config(page_title="RỢ LÝ SƯ PHẠM NGỮ VĂN & MENTOR NĂNG LỰC SỐ", page_icon="📚")
 
 # 1. Cấu hình API Key (Lấy từ hệ thống bảo mật của Streamlit)
 # Thầy KHÔNG dán trực tiếp API Key vào đây để tránh lộ thông tin
