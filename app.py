@@ -2,7 +2,8 @@ import streamlit as st
 import google.generativeai as genai
 from streamlit_mic_recorder import speech_to_text # Thư viện ghi âm
 
-# --- 1. CẤU HÌNH TRANG (Đã sửa lỗi dấu ngoặc kép tại đây) ---
+# --- 1. CẤU HÌNH TRANG (ĐÃ SỬA LỖI DẤU NGOẶC KÉP) ---
+# Dùng dấu nháy đơn ' bao quanh toàn bộ tiêu đề để không bị lỗi
 st.set_page_config(
     page_title='TRỢ LÝ HỌC TẬP & GIẢNG DẠY NGỮ VĂN - "VĂN SĨ SỐ" (Người bạn đồng hành văn học thời 4.0)',
     page_icon="📚",
@@ -23,7 +24,7 @@ generation_config = {
   "max_output_tokens": 8192,
 }
 
-# --- 4. NHẬP VAI GIÁO VIÊN (System Instruction - Đã cập nhật phần xử lý giọng nói) ---
+# --- 4. NHẬP VAI GIÁO VIÊN (System Instruction) ---
 system_instruction = """
 SYSTEM INSTRUCTIONS: TRỢ LÝ HỌC TẬP & GIẢNG DẠY NGỮ VĂN - "VĂN SĨ SỐ"
 
@@ -44,8 +45,8 @@ II. GIAO THỨC PHÂN LOẠI ĐỐI TƯỢNG (USER DETECTION)
 III. NGUYÊN TẮC HOẠT ĐỘNG CỐT LÕI
 1. Vùng cấm Ngữ liệu (Teacher Mode): Ra đề thi định kỳ KHÔNG dùng văn bản SGK. Ưu tiên văn học địa phương (Mã A Lềnh, Hùng Đình Quý...).
 2. Người đồng hành Số (Student Mode): Không viết văn mẫu trọn vẹn. Chỉ gợi ý dàn ý, từ khóa.
-3. Giao thức Đa phương thức (Xử lý Giọng nói - MỚI):
-   - Nếu đầu vào là văn bản chuyển từ giọng nói (không dấu, câu cụt, từ đệm "à/ờ"): Hãy tự động hiểu ý, bỏ qua lỗi ngữ pháp và trả lời tự nhiên như hội thoại.
+3. Giao thức Đa phương thức (Xử lý Giọng nói):
+   - Nếu đầu vào là văn bản chuyển từ giọng nói (không dấu, câu cụt): Hãy tự động hiểu ý, bỏ qua lỗi ngữ pháp và trả lời tự nhiên.
    - Với HS vùng cao: Kiên nhẫn giải thích nếu câu hỏi chưa rõ.
 
 IV. CÁC PHÂN HỆ CHỨC NĂNG
@@ -57,19 +58,15 @@ V. KHO DỮ LIỆU
 - Local Corpus: Văn học Tuyên Quang - Hà Giang (Lễ hội Gầu Tào, Chợ tình Khâu Vai, Na Hang...).
 """
 
-# Khởi tạo mô hình (Có cơ chế tự động chuyển về 1.5 nếu 2.5 chưa chạy được)
+# Khởi tạo mô hình: DÙNG GEMINI 1.5 FLASH ĐỂ KHÔNG BỊ LỖI QUOTA 429
 try:
     model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash",
+        model_name="gemini-1.5-flash", # Đã chuyển về 1.5 cho ổn định
         generation_config=generation_config,
         system_instruction=system_instruction,
     )
-except Exception:
-    model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
-        generation_config=generation_config,
-        system_instruction=system_instruction,
-    )
+except Exception as e:
+    st.error(f"Lỗi khởi tạo mô hình: {e}")
 
 # --- 5. GIAO DIỆN CHAT ---
 st.title("📚 VĂN SĨ SỐ - TRỢ LÝ NGỮ VĂN")
@@ -86,7 +83,7 @@ for message in st.session_state.messages:
             st.markdown(message["content"])
 
 # --- 6. KHU VỰC NHẬP LIỆU (GIỌNG NÓI + BÀN PHÍM) ---
-st.divider() # Đường kẻ ngang phân cách
+st.divider() # Đường kẻ ngang
 col_mic, col_info = st.columns([1, 4])
 
 with col_mic:
@@ -104,9 +101,9 @@ with col_info:
     if voice_text:
         st.success(f"Đã nghe: '{voice_text}'")
     else:
-        st.info("Bấm nút bên trái để nói, hoặc gõ tin nhắn bên dưới.")
+        st.info("Bấm nút 'Nói', nói xong bấm 'Gửi' để chat.")
 
-# Logic xác định nội dung chat (Ưu tiên giọng nói nếu có)
+# Logic xác định nội dung chat
 prompt = None
 if voice_text:
     prompt = voice_text
@@ -124,7 +121,7 @@ if prompt:
 
     # Gọi AI trả lời
     try:
-        # Tạo context chat từ lịch sử (lọc bỏ system instruction để tránh lỗi format)
+        # Tạo context chat từ lịch sử (lọc bỏ system instruction)
         history_for_model = [
             {"role": m["role"], "parts": [m["content"]]} 
             for m in st.session_state.messages 
@@ -142,7 +139,7 @@ if prompt:
         # Lưu câu trả lời của Bot
         st.session_state.messages.append({"role": "model", "content": response.text})
         
-        # Rerun để làm mới trạng thái (quan trọng cho tính năng giọng nói)
+        # Rerun để làm mới trạng thái (xóa text giọng nói đã gửi)
         st.rerun()
         
     except Exception as e:
