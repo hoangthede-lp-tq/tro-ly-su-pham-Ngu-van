@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 
 # Cấu hình trang
-st.set_page_config(page_title="TRỢ LÝ SƯ PHẠM NGỮ VĂN & MENTOR NĂNG LỰC SỐ", page_icon="📚")
+st.set_page_config(page_title="TRỢ LÝ HỌC TẬP & GIẢNG DẠY NGỮ VĂN - "VĂN SĨ SỐ" (Người bạn đồng hành văn học thời 4.0)", page_icon="📚")
 
 # 1. Cấu hình API Key
 if "GOOGLE_API_KEY" in st.secrets:
