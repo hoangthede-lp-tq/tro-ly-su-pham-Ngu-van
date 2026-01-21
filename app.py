@@ -1,7 +1,8 @@
 import streamlit as st
 import google.generativeai as genai
+import time
 
-# --- 1. CẤU HÌNH TRANG (Đã sửa lỗi cú pháp) ---
+# --- 1. CẤU HÌNH TRANG ---
 st.set_page_config(
     page_title='TRỢ LÝ HỌC TẬP & GIẢNG DẠY NGỮ VĂN - "VĂN SĨ SỐ"',
     page_icon="📚",
@@ -14,7 +15,7 @@ if "GOOGLE_API_KEY" in st.secrets:
 else:
     st.error("Chưa tìm thấy API Key. Vui lòng kiểm tra lại Secrets.")
 
-# --- 3. CHỈ DẪN HỆ THỐNG (Giữ nguyên trí tuệ của thầy) ---
+# --- 3. CHỈ DẪN HỆ THỐNG ---
 system_instruction = """
 SYSTEM INSTRUCTIONS: TRỢ LÝ HỌC TẬP & GIẢNG DẠY NGỮ VĂN - "VĂN SĨ SỐ"
 I. ĐỊNH DANH: Trợ lý chuyên môn cho Giáo viên & Mentor cho Học sinh trường PTDTBT THCS Hố Quáng Phìn.
@@ -24,12 +25,10 @@ II. GIAO THỨC:
 III. KHO DỮ LIỆU: Ưu tiên văn hóa Tuyên Quang - Hà Giang.
 """
 
-# --- 4. KHỞI TẠO MÔ HÌNH (Dùng bản 1.5 Flash chuẩn quốc tế) ---
-# Cấu hình này giúp tránh lỗi Quota 429 (vì bản 1.5 hạn mức rất cao)
+# --- 4. KHỞI TẠO MÔ HÌNH ---
+# Dùng gemini-1.5-flash: Nhanh, miễn phí quota cao, ổn định nhất hiện nay
 generation_config = {
   "temperature": 1,
-  "top_p": 0.95,
-  "top_k": 64,
   "max_output_tokens": 8192,
 }
 
@@ -40,9 +39,7 @@ try:
         system_instruction=system_instruction,
     )
 except Exception as e:
-    # Fallback an toàn nếu máy chủ vẫn chưa cập nhật kịp
-    st.warning("Đang chạy chế độ dự phòng (Gemini Pro)")
-    model = genai.GenerativeModel("gemini-pro")
+    st.error(f"Lỗi khởi tạo mô hình: {e}")
 
 # --- 5. GIAO DIỆN CHAT ---
 st.title("📚 VĂN SĨ SỐ - TRỢ LÝ NGỮ VĂN")
@@ -57,14 +54,13 @@ for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-# --- 6. XỬ LÝ NHẬP LIỆU (Chỉ Text - Đảm bảo không lỗi) ---
+# --- 6. XỬ LÝ NHẬP LIỆU ---
 if prompt := st.chat_input("Em cần thầy giúp gì hôm nay?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     try:
-        # Tạo context chat
         history_for_model = [
             {"role": m["role"], "parts": [m["content"]]} 
             for m in st.session_state.messages 
