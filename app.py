@@ -27,19 +27,20 @@ II. GIAO THỨC:
 III. KHO DỮ LIỆU: Ưu tiên văn hóa Tuyên Quang - Hà Giang.
 """
 
-# --- 4. KHỞI TẠO MÔ HÌNH (SỬ DỤNG BẢN FLASH LATEST - ỔN ĐỊNH NHẤT) ---
+# --- 4. KHỞI TẠO MÔ HÌNH (QUAN TRỌNG NHẤT) ---
 generation_config = {"temperature": 1, "max_output_tokens": 8192}
 
 try:
-    # Dùng alias "gemini-flash-latest" để tự động chọn bản Flash ổn định nhất của Google
-    # Bản này có hạn mức miễn phí cao, tránh lỗi 429
+    # SỬ DỤNG "gemini-flash-latest"
+    # Đây là phiên bản chạy ổn định nhất, hạn mức miễn phí cực cao
+    # Không dùng bản 2.0 hay 2.5 vì sẽ bị khóa sau vài câu hỏi
     model = genai.GenerativeModel(
         model_name="gemini-flash-latest", 
         generation_config=generation_config,
         system_instruction=system_instruction
     )
-except Exception:
-    # Dự phòng cuối cùng
+except Exception as e:
+    # Nếu vẫn lỗi, lùi về bản Pro cũ nhưng chắc chắn chạy được
     model = genai.GenerativeModel("gemini-pro")
 
 # --- 5. GIAO DIỆN CHAT ---
@@ -55,7 +56,7 @@ for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-# --- 6. XỬ LÝ NHẬP LIỆU (Voice + Text) ---
+# --- 6. XỬ LÝ NHẬP LIỆU (Giọng nói + Bàn phím) ---
 st.divider()
 col_mic, col_info = st.columns([1, 4])
 with col_mic:
@@ -69,12 +70,14 @@ if prompt:
         st.markdown(prompt)
 
     try:
+        # Chuẩn bị lịch sử
         history_for_model = [
             {"role": m["role"], "parts": [m["content"]]} 
             for m in st.session_state.messages 
             if m["role"] in ["user", "model"]
         ]
         
+        # Gọi AI
         chat_session = model.start_chat(history=history_for_model[:-1])
         
         with st.chat_message("assistant"):
@@ -83,6 +86,8 @@ if prompt:
                 st.markdown(response.text)
         
         st.session_state.messages.append({"role": "model", "content": response.text})
+        
+        # Đợi 1 chút rồi làm mới để tránh lỗi lặp tin nhắn
         time.sleep(0.5)
         st.rerun()
         
