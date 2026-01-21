@@ -51,7 +51,7 @@ IV. KHO DỮ LIỆU
 try:
     # SỬA Ở ĐÂY: Đổi về "gemini-pro" để tương thích mọi phiên bản thư viện
     model = genai.GenerativeModel(
-        model_name="gemini-pro", 
+        model_name="gemini-2.5-flash", 
         generation_config=generation_config,
         system_instruction=system_instruction,
     )
