@@ -57,14 +57,16 @@ V. KHO DỮ LIỆU
 - Local Corpus: Văn học Tuyên Quang - Hà Giang (Lễ hội Gầu Tào, Chợ tình Khâu Vai, Na Hang...).
 """
 
-# Khởi tạo mô hình (Có cơ chế tự động chuyển về 1.5 nếu 2.5 chưa chạy được)
+# --- CẤU HÌNH MÔ HÌNH (DÙNG BẢN FLASH CHO MIỄN PHÍ) ---
 try:
+    # Thử dùng bản 2.5 Flash (Mới nhất, nhanh)
     model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash",
+        model_name="gemini-2.5-flash", 
         generation_config=generation_config,
         system_instruction=system_instruction,
     )
 except Exception:
+    # Nếu lỗi thì quay về 1.5 Flash (Ổn định nhất)
     model = genai.GenerativeModel(
         model_name="gemini-1.5-flash",
         generation_config=generation_config,
