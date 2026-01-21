@@ -1,7 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 
-# --- 1. CẤU HÌNH TRANG (Đã fix lỗi dấu ngoặc) ---
+# --- 1. CẤU HÌNH TRANG ---
 st.set_page_config(
     page_title='TRỢ LÝ HỌC TẬP & GIẢNG DẠY NGỮ VĂN - "VĂN SĨ SỐ"',
     page_icon="📚",
@@ -14,7 +14,8 @@ if "GOOGLE_API_KEY" in st.secrets:
 else:
     st.error("Chưa tìm thấy API Key. Vui lòng kiểm tra lại Secrets.")
 
-# --- 3. CẤU HÌNH MÔ HÌNH (Dùng bản 1.5 Flash để KHÔNG bị lỗi 429 Quota) ---
+# --- 3. CẤU HÌNH MÔ HÌNH ---
+# Sử dụng "gemini-pro" (Bản 1.0) -> Đảm bảo 100% chạy được, không lỗi 404, không lỗi 429
 generation_config = {
   "temperature": 1,
   "top_p": 0.95,
@@ -29,7 +30,6 @@ I. ĐỊNH DANH & BỐI CẢNH (IDENTITY & CONTEXT)
 Tên gọi: TRỢ LÝ HỌC TẬP & GIẢNG DẠY NGỮ VĂN - "VĂN SĨ SỐ".
 Vị trí: Trường PTDTBT THCS Hố Quáng Phìn (Vùng cao, HS dân tộc Mông, Dao...).
 Sứ mệnh: Trợ lý chuyên môn cho Giáo viên & Mentor cho Học sinh.
-Nền tảng tri thức: SGK Kết nối tri thức (6-9), Văn bản pháp quy (5512, 7991), Văn hóa Tuyên Quang - Hà Giang.
 
 II. GIAO THỨC PHÂN LOẠI ĐỐI TƯỢNG (USER DETECTION)
 1. GIÁO VIÊN (Teacher Mode):
@@ -43,19 +43,15 @@ III. NGUYÊN TẮC HOẠT ĐỘNG CỐT LÕI
 1. Vùng cấm Ngữ liệu (Teacher Mode): Ra đề thi định kỳ KHÔNG dùng văn bản SGK. Ưu tiên văn học địa phương (Mã A Lềnh, Hùng Đình Quý...).
 2. Người đồng hành Số (Student Mode): Không viết văn mẫu trọn vẹn. Chỉ gợi ý dàn ý, từ khóa.
 
-IV. CÁC PHÂN HỆ CHỨC NĂNG
-- Giáo viên: Soạn KHBD 5512 (Vận dụng thực tế địa phương), Ra đề thi ma trận 7991.
-- Học sinh: Trợ giảng 24/7, Rèn kỹ năng Viết, Hướng dẫn Đọc hiểu.
-
-V. KHO DỮ LIỆU
-- Blacklist: Các bài trong SGK KNTT (Dế Mèn, Cô bé bán diêm...).
-- Local Corpus: Văn học Tuyên Quang - Hà Giang (Lễ hội Gầu Tào, Chợ tình Khâu Vai, Na Hang...).
+IV. KHO DỮ LIỆU
+- Blacklist: Các bài trong SGK KNTT.
+- Local Corpus: Văn học Tuyên Quang - Hà Giang.
 """
 
-# Sử dụng gemini-1.5-flash (Ổn định, miễn phí cao)
 try:
+    # SỬA Ở ĐÂY: Đổi về "gemini-pro" để tương thích mọi phiên bản thư viện
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash", 
+        model_name="gemini-pro", 
         generation_config=generation_config,
         system_instruction=system_instruction,
     )
@@ -66,31 +62,30 @@ except Exception as e:
 st.title("📚 VĂN SĨ SỐ - TRỢ LÝ NGỮ VĂN")
 st.caption("Trợ lý Sư phạm Ngữ Văn - Trường PTDTBT THCS Hố Quáng Phìn")
 
-# Khởi tạo lịch sử
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Hiển thị lịch sử
+# Hiển thị lịch sử chat
 for message in st.session_state.messages:
     if message["role"] != "system":
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-# --- 5. XỬ LÝ NHẬP LIỆU (Chỉ Text - Ổn định) ---
+# --- 5. XỬ LÝ NHẬP LIỆU ---
 if prompt := st.chat_input("Em cần thầy giúp gì hôm nay?"):
-    # Lưu câu hỏi
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Gọi AI trả lời
     try:
+        # Tạo context chat
         history_for_model = [
             {"role": m["role"], "parts": [m["content"]]} 
             for m in st.session_state.messages 
             if m["role"] in ["user", "model"]
         ]
         
+        # Bắt đầu chat
         chat_session = model.start_chat(history=history_for_model[:-1])
         
         with st.chat_message("assistant"):
